@@ -1,0 +1,212 @@
+Utilizar Python:
+
+Acción                              Comando
+------------------------------------
+Instalar Python                     $ apt install python3.14 (O la version que desees)
+Actualizar Python                   $ apt update python3.14 (O la version que desees)
+Verificar versión de python         $ python --version
+Ejecutar Python 3.14                $ python3.14
+Instalar paquetes                   $ python3.14 -m pip install <name>
+Actualizar pip                      $ pip install --upgrade pip
+------------------------------------
+Entorno virtual:
+------------------------------------
+Crear entorno virtual               $ python3.14 -m venv myenv
+Ejecutar entorno virtual            $ source .myenv/bin/activate
+Cerrar entorno virtual              $ deactivate
+------------------------------------
+
+Nota:
+Al crear el entorno virtual, es importante tener en cuenta que la versión indicada determina la versión
+que se utilizará cuando se ejecute ese entorno virtual.
+
+_______________________________________________________________________________________
+
+Utilizar Django:
+
+Acción                              Comando
+------------------------------------
+Instalar Django                     $ pip install django
+Actualizar Django                   $ pip install --upgrade django
+Verificar versión de django         $ django-admin --version  
+Crear proyecto                      $ django-admin startproject myproject
+Aplicar migraciones                 $ python manage.py migrate
+Ejecutar proyecto                   $ python manage.py runserver
+Crear app                           $ python manage.py startapp myapp
+------------------------------------
+
+Nota:
+Si se presenta algún inconveniente a la hora de instalar Django se recomienda actualizar pip.
+
+_______________________________________________________________________________________
+
+Descripciones y detalles para entender la estructura y archivos que manejaremos:
+
+Proyecto: myproject (Contenedor)
+    El proyecto es el contenedor que contiene la configuración global, donde establecemos la base de datos
+    que vamos a utilizar, las apps que tenemos instaladas y cómo se conectan las rutas principales.
+
+App: myapp (Modulos)
+    La o las apps son las que contienen la lógica de la aplicación, donde establecemos las vistas, los modelos
+    y las plantillas.
+
+La estructura inicial de los archivos tiende a ser la siguiente:
+
+myproject/
+    manage.py
+    myproject/
+        __init__.py
+        settings.py
+        urls.py
+        wsgi.py
+    myapp/
+        templates/
+            myapp/
+                home.html
+        __init__.py
+        admin.py
+        apps.py
+        migrations/
+        models.py
+        tests.py
+        views.py
+        urls.py
+
+Definimos cada archivo de la siguiente manera:
+
+manage.py
+    Es el archivo principal que se encarga de ejecutar los comandos de django. No lo editas, solo lo usas en la
+    terminal para crear apps, hacer migraciones o encender el servidor. Ejecuta comandos como python manage.py runserver.
+
+__init__.py:
+    Un archivo vacío que le dice a Python que esta carpeta se trata de un paquete de Python.
+
+myproject/
+    settings.py:
+        El archivo más importante del proyecto. Aquí defines la Base de Datos, el idioma, la zona horaria y, sobre todo,
+        registras tus Apps en la lista INSTALLED_APPS.
+    urls.py:
+        El archivo que define las URLs principales del proyecto. Aquí es donde se definen las rutas principales del proyecto.
+    wsgi.py:
+        Son archivos de conexión para cuando subas tu web a un servidor real (como Internet). Permiten que el servidor web entienda a Django.
+
+myapp/
+    admin.py:
+        Aquí registras tus modelos para que aparezcan en el panel de administración de Django (la web que te permite crear/editar datos visualmente).
+    apps.py:
+        Contiene la configuración específica de esta aplicación (como su nombre interno).
+    models.py:
+        Aquí defines la estructura de tu base de datos (tablas, campos, relaciones). Es como crear los planos de tus tablas.
+    views.py:
+        Aquí escribes la lógica de tu aplicación. Son las funciones que reciben las peticiones web y devuelven las respuestas (HTML, datos, etc.).
+    urls.py:
+        Define las rutas específicas de esta aplicación. Por ejemplo, la ruta /productos/, /perfil/, etc. podría estar definida aquí.
+    templates/
+        myapp/
+            home.html
+                Es un archivo HTML estándar, pero con superpoderes. Django usa un lenguaje llamado Django Template Language (DTL)
+                que te permite poner cosas como {{ nombre_usuario }} para que el HTML sea dinámico.
+        Aquí es donde guardas tus archivos HTML. Django busca las plantillas dentro de la carpeta templates/ de cada app. Las plantillas son
+        la capa visual de tu aplicación, es decir, lo que el usuario ve en el navegador.
+
+Notas:
+    ¿Por qué se recomienda añadir a la ruta una carpeta adicional así como en"templates/myapp/home.html"? (Añadir una carpeta de la app)
+        Django junta todos los archivos de todas las carpetas templates de todas tus apps en una sola bolsa. Si tienes dos apps con un archivo
+        llamado home.html, Django se confundiría. Al crear una subcarpeta con el nombre de la app (myapp/), te aseguras de que siempre
+        encuentre el archivo correcto. A esto se le llama "Namespacing".
+
+Resumen del flujo de trabajo:
+
+    1._ El usuario pide una página (URL).
+
+    2._ La View recibe la petición.
+
+    3._ La View busca información en el Model (Base de Datos).
+
+    4._ La View pasa esa información al Template (HTML).
+
+    5._ El Template se renderiza y se le entrega al usuario.
+
+_______________________________________________________________________________________
+
+¿Cómo definir el modelo, las funciones, sus rutas de acceso y plantillas en una app?
+
+Debemos definir el modelo en models.py y cuando definimos una función en views.py debemos definir su ruta en urls.py.
+
+Ejemplo:
+
+myapp/
+    models.py:
+
+        from django.db import models # Se importan los modelos de la base de datos
+
+        class List(models.Model): # Se define el modelo
+            title = models.CharField(max_length=100) # Se define el campo title
+
+myapp/
+    views.py:
+
+        from django.shortcuts import render, redirect # Se importan las funciones necesarias, en este caso render para renderizar plantillas y redirect para redirigir a una ruta
+        from .models import List # Se importa el modelo específico para poder acceder a la información
+
+        def list(request): # Se define la función que recibe la petición
+            list = List.objects.all() # Se obtiene toda la información de la base de datos relacionada con el modelo List
+            return render(request, 'myapp/home.html', {'list': list}) # Se renderiza la plantilla con su respectiva solicitud HTTP, ruta del archivo y el contexto
+
+        def create(request): # Se define la función que recibe la petición
+            if request.method == 'POST': # Se define la condición de que la petición sea de tipo POST
+                title = request.POST.get('title') # Se obtiene el título de la petición
+                List.objects.create(title=title) # Se crea el objeto en el modelo List con el título obtenido
+            return redirect('home') # Se redirige a la ruta 'home'
+
+myapp/
+    urls.py:
+
+        from django.urls import path # Se importa la función oficial de Django para crear rutas (URLs)
+        from . import views # Se importa views que es nuestro archivo donde previamente definimos las funciones
+
+        urlpatterns = [
+            path('', views.list, name='home'), # Se define la ruta para acceder a la función que definimos en views.py (en este caso, la función list) y le asignamos un alias (name='home')
+            path('create/', views.create, name='create'), # Se define la ruta para acceder a la función que definimos en views.py (en este caso, la función create) y le asignamos un alias (name='create')
+        ]
+
+myapp/
+    templates/
+        myapp/
+            home.html:
+                <!DOCTYPE html>
+                <html lang="es">
+                    <head>
+                        <title>Documento</title>
+                    </head>
+                    <body>
+
+                        <!-- Determinamos a la ruta que se va a enviar la petición POST -->
+                        <form action="{% url 'create' %}" method="POST">
+
+                            <!-- Se define el campo de texto para ingresar el título de la tarea -->
+                            <input type="text" name="title" placeholder="Nueva tarea...">
+
+                            <!-- Se define el botón para enviar la petición -->
+                            <button type="submit">Agregar</button>
+
+                        </form>
+                        <h1>Mis Tareas</h1>
+
+                        <ul>
+                            <!-- Se itera sobre la lista de tareas -->
+                            {% for t in list %}
+
+                                <li>
+                                    <!-- Se muestra el título de cada tarea -->
+                                    {{ t.title }}
+                                </li>
+
+                            <!-- Si la lista está vacía, se muestra un mensaje -->
+                            {% empty %}
+                                <li>No hay tareas.</li>
+                            {% endfor %}
+                        </ul>
+
+                    </body>
+                </html>

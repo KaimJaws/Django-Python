@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Documento</title>
+    </head>
+    <body>
+        <h1>Mis Tareas</h1>
+
+        <form action="{% url 'create_task' %}" method="POST">
+            <input type="text" name="title" placeholder="Nueva tarea...">
+            <button type="submit">Agregar</button>
+        </form>
+
+        <hr>
+
+        <ul>
+            {% for task in tasks %}
+                {% if not task.completed %}
+                    <li>
+                        {{ task.title }} 
+                        <a href="{% url 'delete_task' task.id %}" style="color: red;">[Eliminar]</a>
+                        <a href="{% url 'complete_task' task.id %}" style="color: green;">[Completar]</a>
+                    </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay tareas pendientes.</li>
+            {% endfor %}
+        </ul>
+
+        <strong>Tareas completadas</strong>
+        <ul>
+            {% for task in tasks %}
+                {% if task.completed %}
+                    <li>
+                        <strike>{{ task.title }}</strike>
+                        <a href="{% url 'delete_task' task.id %}" style="color: red;">[Eliminar]</a>
+                        <a href="{% url 'complete_task' task.id %}" style="color: green;">[Completar]</a>
+                    </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay tareas completadas.</li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
