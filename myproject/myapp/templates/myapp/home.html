@@ -9,21 +9,21 @@
         <h1>Mis Tareas</h1>
 
         <form action="{% url 'create_task' %}" method="POST">
+            {% csrf_token %}
             <input type="text" name="title" placeholder="Nueva tarea...">
+            <input type="text" name="description" placeholder="Descripción...">
             <button type="submit">Agregar</button>
         </form>
 
         <hr>
 
         <ul>
-            {% for task in tasks %}
-                {% if not task.completed %}
-                    <li>
-                        {{ task.title }} 
-                        <a href="{% url 'delete_task' task.id %}" style="color: red;">[Eliminar]</a>
-                        <a href="{% url 'complete_task' task.id %}" style="color: green;">[Completar]</a>
-                    </li>
-                {% endif %}
+            {% for task in pending_tasks %}
+                <li>
+                    {{ task.title }}{% if task.description %}: {{ task.description }}{% endif %}
+                    <a href="{% url 'delete_task' task.id %}" style="color: red;">[Eliminar]</a>
+                    <a href="{% url 'complete_task' task.id %}" style="color: green;">[Completar]</a>
+                </li>
             {% empty %}
                 <li>No hay tareas pendientes.</li>
             {% endfor %}
@@ -31,14 +31,11 @@
 
         <strong>Tareas completadas</strong>
         <ul>
-            {% for task in tasks %}
-                {% if task.completed %}
-                    <li>
-                        <strike>{{ task.title }}</strike>
-                        <a href="{% url 'delete_task' task.id %}" style="color: red;">[Eliminar]</a>
-                        <a href="{% url 'complete_task' task.id %}" style="color: green;">[Completar]</a>
-                    </li>
-                {% endif %}
+            {% for task in completed_tasks %}
+                <li>
+                    <strike>{{ task.title }}{% if task.description %}: {{ task.description }}{% endif %}</strike>
+                    <a href="{% url 'delete_task' task.id %}" style="color: red;">[Eliminar]</a>
+                </li>
             {% empty %}
                 <li>No hay tareas completadas.</li>
             {% endfor %}

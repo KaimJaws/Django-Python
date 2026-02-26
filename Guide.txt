@@ -131,9 +131,15 @@ ________________________________________________________________________________
 
 ¿Cómo definir el modelo, las funciones, sus rutas de acceso y plantillas en una app?
 
-Debemos definir el modelo en models.py y cuando definimos una función en views.py debemos definir su ruta en urls.py.
+Debemos definir el modelo en models.py y cuando definimos una función en views.py debemos definir su ruta en urls.py;
+y, si para visualizar la información necesitamos una plantilla, debemos definirla en templates/myapp/.
 
-Ejemplo:
+Nota:
+    Se recomienda trabajar con Type Hinting para definir el tipo de dato que se va a recibir en las funciones,
+    por ejemplo, si se va a recibir un entero se define como int, si se va a recibir una petición se define como HttpRequest,
+    si se va a recibir una respuesta se define como HttpResponse, etc.
+
+Ejemplo (básico sin Type Hinting):
 
 myapp/
     models.py:
@@ -184,6 +190,9 @@ myapp/
                         <!-- Determinamos a la ruta que se va a enviar la petición POST -->
                         <form action="{% url 'create' %}" method="POST">
 
+                            <!-- Se define el token de seguridad para la petición POST (es obligatorio para peticiones POST) -->
+                            {% csrf_token %}
+
                             <!-- Se define el campo de texto para ingresar el título de la tarea -->
                             <input type="text" name="title" placeholder="Nueva tarea...">
 
@@ -210,3 +219,199 @@ myapp/
 
                     </body>
                 </html>
+_______________________________________________________________________________________
+
+Buenas prácticas:
+
+    Existen distintas prácticas que se deben tener en cuenta al momento de desarrollar con Django.
+    Ya sea por temas de optimización, legibilidad, mantenibilidad, etc. Entre ellas se encuentran:
+
+    - Type Hinting: caracteristica de Python que permite declarar explicitamente que tipo de dato esperas en una variable, 
+    en los parámetros de una función o en lo que esa función devuelve.
+
+    Ejemplo:
+
+        def sum(a: int, b: int) -> int:
+            return a + b
+
+    - Uso óptimo de property: se trata de un decorador que permite definir un método como si fuera un atributo.
+    Si tienes un dato que depende de otros atributos, no lo guardes en la base de datos; calcúlalo al vuelo.
+
+    Ejemplo:
+
+        class Task(models.Model):
+            title = models.CharField(max_length=200)
+            
+            @property
+            def is_urgent(self) -> bool:
+                # Lógica calculada al vuelo, si el título contiene la palabra URGENTE en mayúsculas (upper), devuelve True
+                return "URGENTE" in self.title.upper()
+
+    - Optimización con filters desde la base de datos: si vamos a distinguir entre una información y otra, 
+    es mejor hacerlo desde la base de datos que desde Python, ya que de esta forma se reduce el consumo de memoria.
+
+    Ejemplo (diferenciar entre tareas pendientes y completadas):
+
+        # Forma ineficiente de obtener los datos
+        tasks = Task.objects.all()
+
+        # Forma eficiente de obtener los datos
+        pending_tasks = Task.objects.filter(completed=False)
+        completed_tasks = Task.objects.filter(completed=True)
+
+    De esta manera nos estaríamos ahorrando el recorrido de la lista de tareas en el template de Django sino que directamente podríamos
+    trabajar con los datos filtrados desde la base de datos.
+_______________________________________________________________________________________
+
+Tipado en Django (Type Hinting):
+
+    Es es una característica de Python que te permite declarar explícitamente qué tipo de dato esperas en una variable,
+    en los parámetros de una función o en lo que esa función devuelve. Aunque Python sigue siendo un lenguaje de tipado dinámico,
+    los type hints ayudan a mejorar la legibilidad del código. Python no arrojará un error de ejecución si ignoras los tipos,
+    es decir, si dices que esperas un str y pasas un int, Python lo ejecutará igual. El Type Hinting es para los desarrolladores
+    y para las herramientas de análisis, no para el intérprete de Python, aunque en algunas ocasiones puede prevenir errores.
+
+    Ejemplo:
+
+        # Se define la función suma que recibe dos parámetros, a y b, ambos de tipo int, y que devuelve un valor de tipo int
+        def sum(a: int, b: int) -> int:
+            return a + b
+
+    En este ejemplo, le estamos diciendo a Python que esperamos que la función suma reciba dos parámetros, a y b, ambos de tipo int, y que devuelva un valor de tipo int.
+    Si pasamos un valor de otro tipo, Python no arrojará un error de ejecución, pero nos avisará de que estamos cometiendo un error.
+
+    A continuación se muestra una serie de ejemplos de Type Hinting en Django:
+
+    - Variables (str, int, bool, float, etc.):
+
+        var: str = "Hola"
+        var: int = 1
+        var: bool = True
+        var: float = 1.0
+
+        También se pueden declarar con una unión de tipos (Python 3.10+):
+
+        var: str | int = "Hola"
+        var: int | float = 1
+        var: bool | None = True
+        var: float | str = 1.0
+
+    - Listas (list):
+
+        list1: list[str] = ["Hola", "Mundo"]
+        list2: list[int] = [1, 2, 3]
+        list3: list[bool] = [True, False, True]
+        list4: list[float] = [1.0, 2.0, 3.0]
+
+    - Tuplas (tuple):
+
+        tuple1: tuple[str, int] = ("Hola", 1)
+        tuple2: tuple[int, int] = (1, 2)
+        tuple3: tuple[bool, bool] = (True, False)
+        tuple4: tuple[float, float] = (1.0, 2.0)
+
+    - Diccionarios (dict):
+
+        dictionary: dict[str, int] = {"Hola": 1, "Mundo": 2}
+        dictionary: dict[int, int] = {1: 1, 2: 2}
+        dictionary: dict[bool, bool] = {True: True, False: False}
+        dictionary: dict[float, float] = {1.0: 1.0, 2.0: 2.0}
+
+    - Conjuntos (set):
+
+        set1: set[str] = {"Hola", "Mundo"}
+        set2: set[int] = {1, 2, 3}
+        set3: set[bool] = {True, False}
+        set4: set[float] = {1.0, 2.0, 3.0}
+
+    - Peticiones (HttpRequest):
+
+        request: HttpRequest = HttpRequest()
+
+    - Respuestas (HttpResponse):
+
+        response: HttpResponse = HttpResponse()
+
+    - Modelos (Model):
+
+        model: Model = Model()
+
+    - QuerySets (QuerySet):
+
+        queryset: QuerySet = QuerySet()
+    
+    - QuerySets con modelos (QuerySet[Model]):
+
+        # Es una forma de decirle a Python que esperamos un QuerySet de modelos en específico
+        queryset: QuerySet[Model] = Model.objects.all()
+
+    - Funciones (def):
+
+        def sum(a: int, b: int) -> int:
+            return a + b
+
+    - Clases (class):
+
+        class Person:
+            def __init__(self, name: str, age: int):
+                self.name = name
+                self.age = age
+
+    - Objetos (object):
+
+        object: object = object()
+
+    - None:
+
+        var: None = None
+
+    - Any:
+
+        var: Any = Any()
+
+    - Union:
+
+        var: Union[str, int] = "Hola"
+        var: Union[int, float] = 1
+        var: Union[bool, None] = True
+        var: Union[float, str] = 1.0
+
+    - Optional (Puede ser del tipo declarado o None).:
+
+        var: Optional[str] = "Hola"
+        var: Optional[int] = 1
+        var: Optional[bool] = True
+        var: Optional[float] = 1.0
+        var: Optional[None] = None
+
+    - Callable (Función que recibe parámetros y devuelve un valor):
+
+        var: Callable[[int, int], int] = sum
+        var: Callable[[str, str], str] = lambda a, b: a + b
+        var: Callable[[bool, bool], bool] = lambda a, b: a and b
+        var: Callable[[float, float], float] = lambda a, b: a + b
+
+    - Listas de Listas (list[list]):
+
+        list1: list[list[int]] = [[1, 2, 3], [4, 5, 6]]
+        list2: list[list[str]] = [["Hola", "Mundo"], ["Hola", "Mundo"]]
+        list3: list[list[bool]] = [[True, False], [False, True]]
+        list4: list[list[float]] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+
+    - Listas de Tuplas (list[tuple]):
+
+        list1: list[tuple[str, int]] = [("Hola", 1), ("Mundo", 2)]
+        list2: list[tuple[int, int]] = [(1, 2), (3, 4)]
+        list3: list[tuple[bool, bool]] = [(True, False), (False, True)]
+        list4: list[tuple[float, float]] = [(1.0, 2.0), (3.0, 4.0)]
+
+    - Tuplas de Listas (tuple[list]):
+
+        tuple1: tuple[list[str]] = (["Hola", "Mundo"],)
+        tuple2: tuple[list[int]] = ([1, 2, 3],)
+        tuple3: tuple[list[bool]] = ([True, False],)
+        tuple4: tuple[list[float]] = ([1.0, 2.0, 3.0],)
+
+Nota:
+
+    Cualquiera de los tipos que sean complejos (listas, tuplas, diccionarios, etc.) se pueden anidar infinitamente.
