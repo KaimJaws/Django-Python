@@ -1,4 +1,25 @@
-Utilizar Python:
+---------------------------------------------------------------------------------------------------------------------------
+
+INDICE:
+
+Seleccione la referencia (El texto entre corchetes [@EJEMPLO]) y presione Ctrl + F + Enter para buscar por sección.
+
+1. Python [@PTHN]
+    - Entorno Virtual con VENV [@PYVENV]
+
+2. Django [@DJNG]
+    - Estructura de archivos para Django [@STRFLS]
+    - Modelos, Vistas y Templates [@DJMVT]
+    - Buenas prácticas [@DJBP]
+    - Type Hinting [@DJTH]
+
+3. PostgreSQL [@PSTGRSQL]
+    - Requerimientos para usar PostgreSQL [@PGSQLREQ]
+    - Implementar la base de datos con PostgreSQL [@IMPLDB]
+
+---------------------------------------------------------------------------------------------------------------------------
+
+Utilizar Python [@PTHN]:
 
 Acción                              Comando
 ------------------------------------
@@ -9,7 +30,7 @@ Ejecutar Python 3.14                $ python3.14
 Instalar paquetes                   $ python3.14 -m pip install <name>
 Actualizar pip                      $ pip install --upgrade pip
 ------------------------------------
-Entorno virtual:
+Entorno virtual [@PYVENV]:
 ------------------------------------
 Crear entorno virtual               $ python3.14 -m venv myenv
 Ejecutar entorno virtual            $ source .myenv/bin/activate
@@ -17,12 +38,11 @@ Cerrar entorno virtual              $ deactivate
 ------------------------------------
 
 Nota:
-Al crear el entorno virtual, es importante tener en cuenta que la versión indicada determina la versión
-que se utilizará cuando se ejecute ese entorno virtual.
-
+    Al crear el entorno virtual, es importante tener en cuenta que la versión indicada determina la versión
+    que se utilizará cuando se ejecute ese entorno virtual.
 _______________________________________________________________________________________
 
-Utilizar Django:
+Utilizar Django [@DJNG]:
 
 Acción                              Comando
 ------------------------------------
@@ -36,11 +56,73 @@ Crear app                           $ python manage.py startapp myapp
 ------------------------------------
 
 Nota:
-Si se presenta algún inconveniente a la hora de instalar Django se recomienda actualizar pip.
-
+    Si se presenta algún inconveniente a la hora de instalar Django se recomienda actualizar pip.
 _______________________________________________________________________________________
 
-Descripciones y detalles para entender la estructura y archivos que manejaremos:
+Utilizar PostgreSQL [@PSTGRSQL]:
+
+Acción                              Comando
+------------------------------------
+Instalar PostgreSQL                 $ sudo apt install postgresql postgresql-contrib
+Actualizar PostgreSQL               $ sudo apt update postgresql postgresql-contrib
+Verificar versión de PostgreSQL     $ psql --version
+Abrir terminal de PostgreSQL        $ sudo -u postgres psql
+
+En la terminal de PostgreSQL:
+------------------------------------
+Crear base de datos                 # CREATE DATABASE mydatabase;
+Crear usuario                       # CREATE USER myuser WITH PASSWORD 'mypassword';
+Asignar permisos                    # GRANT ALL PRIVILEGES ON DATABASE mydatabase TO myuser;    
+Cerrar terminal de PostgreSQL       # \q
+------------------------------------
+
+Requerimientos para usar PostgreSQL [@PGSQLREQ]:
+------------------------------------
+Instalar traductor para Django
+    del PostgreSQL:                 $ pip install psycopg2-binary
+------------------------------------
+_______________________________________________________________________________________
+
+Implementar la base de datos con PostgreSQL [@IMPLDB]:
+
+Para poder implementar la base de datos con PostgreSQL, debemos ejecutar la sentencia SQL para crear la base de datos y el usuario.
+
+Un ejemplo de sentencia SQL para crear la base de datos y el usuario desde la terminal de PostgreSQL es el siguiente:
+
+    -- 1. Crear la base de datos
+    CREATE DATABASE mydatabase;
+
+    -- 2. Crear el usuario con una contraseña segura
+    CREATE USER myuser WITH PASSWORD 'mypassword';
+
+    -- 3. Configuraciones recomendadas para Django para el idioma español y la zona horaria (Codificación y tiempos)
+    ALTER ROLE myuser SET client_encoding TO 'utf8';
+    ALTER ROLE myuser SET default_transaction_isolation TO 'read committed';
+    ALTER ROLE myuser SET timezone TO 'UTC';
+
+    -- 4. Darle permisos al usuario sobre la base de datos
+    GRANT ALL PRIVILEGES ON DATABASE mydatabase TO myuser;
+
+Ahora debemos configurar el archivo settings.py para que Django pueda conectarse a la base de datos.
+
+myproject/
+    myproject/
+        settings.py
+            En este archivo, en la sección de DATABASES añadir:
+
+            DATABASES = {
+                'default': {
+                    'ENGINE': 'django.db.backends.postgresql',
+                    'NAME': 'mydatabase',                      # <-- El nombre que elegiste
+                    'USER': 'myuser',                          # <-- El usuario que creaste
+                    'PASSWORD': 'mypassword',                  # <-- La contraseña que elegiste
+                    'HOST': 'localhost',                       # <-- o 127.0.0.1
+                    'PORT': '5432',                            # <-- El puerto por defecto para PostgreSQL
+                }
+}
+_______________________________________________________________________________________
+
+Descripciones y detalles para entender la estructura y archivos que manejaremos [@STRFLS]:
 
 Proyecto: myproject (Contenedor)
     El proyecto es el contenedor que contiene la configuración global, donde establecemos la base de datos
@@ -111,9 +193,10 @@ myapp/
 
 Notas:
     ¿Por qué se recomienda añadir a la ruta una carpeta adicional así como en"templates/myapp/home.html"? (Añadir una carpeta de la app)
-        Django junta todos los archivos de todas las carpetas templates de todas tus apps en una sola bolsa. Si tienes dos apps con un archivo
-        llamado home.html, Django se confundiría. Al crear una subcarpeta con el nombre de la app (myapp/), te aseguras de que siempre
-        encuentre el archivo correcto. A esto se le llama "Namespacing".
+
+    Django junta todos los archivos de todas las carpetas templates de todas tus apps en una sola bolsa. Si tienes dos apps con un archivo
+    llamado home.html, Django se confundiría. Al crear una subcarpeta con el nombre de la app (myapp/), te aseguras de que siempre
+    encuentre el archivo correcto. A esto se le llama "Namespacing".
 
 Resumen del flujo de trabajo:
 
@@ -129,7 +212,7 @@ Resumen del flujo de trabajo:
 
 _______________________________________________________________________________________
 
-¿Cómo definir el modelo, las funciones, sus rutas de acceso y plantillas en una app?
+¿Cómo definir el modelo, las funciones, sus rutas de acceso y plantillas en una app? [@DJMVT]
 
 Debemos definir el modelo en models.py y cuando definimos una función en views.py debemos definir su ruta en urls.py;
 y, si para visualizar la información necesitamos una plantilla, debemos definirla en templates/myapp/.
@@ -221,7 +304,7 @@ myapp/
                 </html>
 _______________________________________________________________________________________
 
-Buenas prácticas:
+Buenas prácticas [@DJBP]:
 
     Existen distintas prácticas que se deben tener en cuenta al momento de desarrollar con Django.
     Ya sea por temas de optimización, legibilidad, mantenibilidad, etc. Entre ellas se encuentran:
@@ -263,7 +346,7 @@ Buenas prácticas:
     trabajar con los datos filtrados desde la base de datos.
 _______________________________________________________________________________________
 
-Tipado en Django (Type Hinting):
+Tipado en Django (Type Hinting) [@DJTH]:
 
     Es es una característica de Python que te permite declarar explícitamente qué tipo de dato esperas en una variable,
     en los parámetros de una función o en lo que esa función devuelve. Aunque Python sigue siendo un lenguaje de tipado dinámico,
@@ -413,5 +496,4 @@ Tipado en Django (Type Hinting):
         tuple4: tuple[list[float]] = ([1.0, 2.0, 3.0],)
 
 Nota:
-
     Cualquiera de los tipos que sean complejos (listas, tuplas, diccionarios, etc.) se pueden anidar infinitamente.
